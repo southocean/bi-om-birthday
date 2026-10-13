@@ -290,7 +290,6 @@
   function showTab(name) {
     document.body.dataset.tab = name;
     tabs.forEach(b => b.setAttribute('aria-selected', b.dataset.tab === name));
-    if (location.hash.slice(1) !== name) history.replaceState(null, '', '#' + name);
   }
   tabs.forEach(b => b.addEventListener('click', () => { showTab(b.dataset.tab); requestAnimationFrame(navState); if (b.dataset.tab === 'pay') playTicks(); }));
   showTab(['pay', 'bills', 'pics'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'pay');
