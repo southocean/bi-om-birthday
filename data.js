@@ -39,8 +39,10 @@ window.BILLS = [
   { by: 'nam', what: 'Đồng hồ', sub: 'Bloc Large Silver · quà cho Hưng', icon: '⌚', kr: 1000, eur: 88.36, date: '2026-10-12' },
 ];
 
-// payments already made: { from, to, kr, date }
-window.PAYMENTS = [];
+// payments already made: { from, to, kr, date, photo }
+window.PAYMENTS = [
+  { from: 'nam', to: 'truc', kr: 246, date: '2026-10-13', photo: 'media/receipts/nam-truc.jpg' },
+];
 
 // rates on 13 Oct 2026 (frankfurter.dev for EUR, open.er-api.com for VND)
 window.FX = { sekPerEur: 11.1698, vndPerSek: 2583 };

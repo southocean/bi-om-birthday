@@ -62,23 +62,24 @@
   // ── pay ────────────────────────────────────────────────
   function renderPay() {
     const rows = pay.map((t, i) => {
-      const done = PAYMENTS.filter(p => p.from === t.from && p.to === t.to).reduce((s, p) => s + p.kr, 0) >= t.kr - 0.5;
+      const made = PAYMENTS.filter(p => p.from === t.from && p.to === t.to);
+      const done = made.reduce((s, p) => s + p.kr, 0) >= t.kr - 0.5, receipt = made.find(p => p.photo);
       const to = person(t.to);
       const m = to.pay[t.m], bank = m.kind === 'bank';
       const via = bank ? m.bank : 'Swish';
       return `<li class="pay-row${done ? ' paid' : ''}" style="--from:${person(t.from).color};--to:${to.color}">
-        <button class="pay-btn" data-i="${i}" ${done ? 'disabled' : ''} aria-label="${esc(person(t.from).name)} chuyển ${esc(to.name)} ${t.kr} kr">
+        <button class="pay-btn" data-i="${i}"${receipt ? ` data-receipt="${esc(receipt.photo)}"` : ''}${done && !receipt ? ' disabled' : ''} aria-label="${esc(person(t.from).name)} chuyển ${esc(to.name)} ${t.kr} kr${done ? ', đã trả' : ''}">
           <span class="pair">${face(t.from)}<span class="arr" aria-hidden="true"><svg viewBox="0 0 24 12" width="22" height="11"><path d="M0 6h20M15 1l6 5-6 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>${face(t.to)}</span>
           <span class="who"><b>${esc(person(t.from).name)} <i>→</i> ${esc(to.name)}</b><small>${esc(via)}</small></span>
           <span class="amt"><b>${krTxt(t.kr, 0)}</b>${bank ? `<small>${vndTxt(vnd(t.kr))}</small>` : ''}</span>
-          <span class="qr-ic">${done ? '✓' : QR_ICON}</span>
+          <span class="qr-ic">${done ? `<span class="q">${QR_ICON}</span><span class="t" aria-hidden="true">✓</span>` : QR_ICON}</span>
         </button></li>`;
     }).join('');
     const spent = id => BILLS.reduce((t, b) => { const s = b.for && b.for.length ? b.for : CREW; return t + (s.includes(id) ? billKr(b) / s.length : 0); }, 0);
     const paid = id => BILLS.filter(b => b.by === id).reduce((t, b) => t + billKr(b), 0);
     const dec = v => v.toLocaleString('sv-SE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const signed = v => { const r = Math.round(v); return (r > 0 ? '+' : r < 0 ? '−' : '') + Math.abs(r).toLocaleString('sv-SE'); };
-    $('#pay').innerHTML = `<ul class="pays">${rows || '<li class="square">Xong hết rồi ✓</li>'}</ul>
+    $('#payList').innerHTML = `<ul class="pays">${rows || '<li class="square">Xong hết rồi ✓</li>'}</ul>
       <table class="tally">
         <thead><tr><th class="unit">kr</th>${CREW.map(id => `<th scope="col" style="--pc:${person(id).color}">${face(id, 'sm')}<span>${esc(person(id).name)}</span></th>`).join('')}</tr></thead>
         <tbody>
@@ -89,7 +90,21 @@
       </table>`;
   }
   renderPay();
-  $('#pay').addEventListener('click', e => { const b = e.target.closest('.pay-btn'); if (b) openPay(pay[+b.dataset.i]); });
+  $('#payList').addEventListener('click', e => {
+    const b = e.target.closest('.pay-btn'); if (!b) return;
+    if (b.dataset.receipt) openViewer([{ src: b.dataset.receipt, alt: 'Biên lai' }], 0);
+    else if (!b.closest('.paid')) openPay(pay[+b.dataset.i]);
+  });
+  // the tick: a second after a paid row comes into view; every time the tab opens, it plays again
+  const paidRows = () => document.querySelectorAll('#payList .pay-row.paid');
+  const paidIO = 'IntersectionObserver' in window && new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    paidIO.unobserve(e.target);
+    setTimeout(() => e.target.classList.add('go'), 1000);
+  }), { threshold: 0.6 });
+  function playTicks() {
+    paidRows().forEach(r => { r.classList.remove('go'); paidIO ? paidIO.observe(r) : r.classList.add('go'); });
+  }
 
   // ── bills ──────────────────────────────────────────────
   function renderBills() {
@@ -100,7 +115,7 @@
       if (!g) groups.push(g = { key, who: b.for && b.for.length ? b.for : CREW, list: [] });
       g.list.push(b);
     });
-    $('#bills').innerHTML = groups.map(g => {
+    $('#billList').innerHTML = groups.map(g => {
       const total = g.list.reduce((t, b) => t + billKr(b), 0);
       const out = CREW.filter(id => !g.who.includes(id));
       return `<div class="bill-group">
@@ -215,14 +230,14 @@
 
   // ── photos ─────────────────────────────────────────────
   // A swipeable strip; tap one for the full-screen viewer (swipe, arrows, ←/→).
-  $('#pics').innerHTML = `<div class="strip"><div class="track" id="track">${GALLERY.map((g, i) => `<button class="tile${g.video ? ' vid' : ''}" data-i="${i}" aria-label="${esc(g.alt)}"><img src="${esc(g.video ? g.poster : g.src)}" alt="" loading="lazy" draggable="false">${g.video ? '<span class="play" aria-hidden="true">▶</span>' : ''}</button>`).join('')}</div>
+  $('#picList').innerHTML = `<div class="strip"><div class="track" id="track">${GALLERY.map((g, i) => `<button class="tile${g.video ? ' vid' : ''}" data-i="${i}" aria-label="${esc(g.alt)}"><img src="${esc(g.video ? g.poster : g.src)}" alt="" loading="lazy" draggable="false">${g.video ? '<span class="play" aria-hidden="true">▶</span>' : ''}</button>`).join('')}</div>
     <button class="nav prev" aria-label="Trước">‹</button><button class="nav next" aria-label="Sau">›</button></div>`;
   const track = $('#track');
   const step = dir => track.scrollBy({ left: dir * track.clientWidth * 0.8, behavior: 'smooth' });
-  $('#pics .prev').onclick = () => step(-1); $('#pics .next').onclick = () => step(1);
+  $('#picList .prev').onclick = () => step(-1); $('#picList .next').onclick = () => step(1);
   const navState = () => {
-    $('#pics .prev').disabled = track.scrollLeft < 4;
-    $('#pics .next').disabled = track.scrollLeft + track.clientWidth > track.scrollWidth - 4;
+    $('#picList .prev').disabled = track.scrollLeft < 4;
+    $('#picList .next').disabled = track.scrollLeft + track.clientWidth > track.scrollWidth - 4;
   };
   track.addEventListener('scroll', navState, { passive: true }); addEventListener('resize', navState); navState();
   // mouse drag to swipe; a drag isn't a click
@@ -235,22 +250,26 @@
     if (drag.moved) track.scrollLeft = drag.s - dx;
   });
   addEventListener('pointerup', () => { if (!drag) return; const moved = drag.moved; track.classList.remove('dragging'); setTimeout(() => { drag = null; }, 0); if (moved) track.dataset.justDragged = '1'; setTimeout(() => delete track.dataset.justDragged, 50); });
-  track.addEventListener('click', e => { if (track.dataset.justDragged) return; const t = e.target.closest('.tile'); if (t) openViewer(+t.dataset.i); });
+  track.addEventListener('click', e => { if (track.dataset.justDragged) return; const t = e.target.closest('.tile'); if (t) openViewer(GALLERY, +t.dataset.i); });
 
   const viewer = $('#viewer'), vTrack = $('#vTrack');
-  vTrack.innerHTML = GALLERY.map(g => `<div class="v-item">${g.video
-    ? `<video src="${esc(g.src)}" poster="${esc(g.poster)}" controls playsinline preload="metadata"></video>`
-    : `<img src="${esc(g.src)}" alt="${esc(g.alt)}" loading="lazy">`}</div>`).join('');
-  $('#vDots').innerHTML = GALLERY.map((_, i) => `<button data-i="${i}" aria-label="${i + 1}"></button>`).join('');
+  let vItems = [];
   const vIndex = () => Math.round(vTrack.scrollLeft / vTrack.clientWidth);
-  const vGo = (i, smooth = true) => vTrack.scrollTo({ left: Math.max(0, Math.min(GALLERY.length - 1, i)) * vTrack.clientWidth, behavior: smooth ? 'smooth' : 'auto' });
+  const vGo = (i, smooth = true) => vTrack.scrollTo({ left: Math.max(0, Math.min(vItems.length - 1, i)) * vTrack.clientWidth, behavior: smooth ? 'smooth' : 'auto' });
   function vSync() {
     const i = vIndex();
     $('#vDots').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-current', i === j));
-    $('#vPrev').disabled = i === 0; $('#vNext').disabled = i === GALLERY.length - 1;
+    $('#vPrev').disabled = i === 0; $('#vNext').disabled = i === vItems.length - 1;
     vTrack.querySelectorAll('video').forEach(v => { if (v.closest('.v-item') !== vTrack.children[i]) v.pause(); });
   }
-  function openViewer(i) {
+  function openViewer(items, i) {
+    if (items !== vItems) {
+      vItems = items;
+      vTrack.innerHTML = items.map(g => `<div class="v-item">${g.video
+        ? `<video src="${esc(g.src)}" poster="${esc(g.poster)}" controls playsinline preload="metadata"></video>`
+        : `<img src="${esc(g.src)}" alt="${esc(g.alt)}">`}</div>`).join('');
+      $('#vDots').innerHTML = items.length > 1 ? items.map((_, j) => `<button data-i="${j}" aria-label="${j + 1}"></button>`).join('') : '';
+    }
     viewer.showModal();
     requestAnimationFrame(() => { vGo(i, false); vSync(); const v = vTrack.children[i].querySelector('video'); if (v) v.play().catch(() => {}); });
   }
@@ -273,6 +292,7 @@
     tabs.forEach(b => b.setAttribute('aria-selected', b.dataset.tab === name));
     if (location.hash.slice(1) !== name) history.replaceState(null, '', '#' + name);
   }
-  tabs.forEach(b => b.addEventListener('click', () => { showTab(b.dataset.tab); requestAnimationFrame(navState); }));
+  tabs.forEach(b => b.addEventListener('click', () => { showTab(b.dataset.tab); requestAnimationFrame(navState); if (b.dataset.tab === 'pay') playTicks(); }));
   showTab(['pay', 'bills', 'pics'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'pay');
+  playTicks();
 })();

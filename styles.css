@@ -110,9 +110,37 @@ body[data-tab="pay"] .panel:not(#panel-pay), body[data-tab="bills"] .panel:not(#
   flex: none; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px;
   background: var(--red); color: #fff; box-shadow: 0 4px 10px color-mix(in srgb, var(--red) 35%, transparent);
 }
-.pay-row.paid .pay-btn { cursor: default; opacity: .8; }
-.pay-row.paid .qr-ic { background: var(--green); border-radius: 50%; font-weight: 900; font-size: 18px; box-shadow: none; }
-.pay-row.paid .amt b { color: var(--green); text-decoration: line-through; text-decoration-thickness: 2px; }
+/* a payment made: the row fills green from the left, then the QR turns into a tick (Emma's) */
+.pay-row.paid .pay-btn[data-receipt] { cursor: zoom-in; }
+.pay-row.paid .pay-btn:disabled { cursor: default; }
+.pay-row.paid .pay-btn::after {
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: color-mix(in srgb, var(--green) 14%, transparent);
+  transform: scaleX(0); transform-origin: left center; transition: transform .9s cubic-bezier(.65, 0, .25, 1);
+}
+.pay-row.paid .pay-btn > * { position: relative; z-index: 1; }
+.pay-row.paid .amt b { transition: color .5s ease .55s; }
+.pay-row.paid.go .pay-btn::after { transform: scaleX(1); }
+.pay-row.paid.go .amt b { color: var(--green); }
+.pay-row.paid.go .pay-btn { border-color: color-mix(in srgb, var(--green) 45%, var(--line)); }
+.pay-row.paid .qr-ic { display: grid; overflow: visible; transition: background .25s ease .9s, border-radius .25s ease .9s, box-shadow .25s ease .9s; }
+.qr-ic .q, .qr-ic .t { grid-area: 1 / 1; display: grid; place-items: center; }
+.qr-ic .q { transition: transform .22s ease .85s, opacity .22s ease .85s; }
+.qr-ic .t { font-size: 19px; font-weight: 900; line-height: 1; transform: scale(0); }
+.pay-row.paid.go .qr-ic { background: var(--green); border-radius: 50%; box-shadow: none; }
+.pay-row.paid.go .qr-ic .q { transform: scale(0); opacity: 0; }
+.pay-row.paid.go .qr-ic .t { animation: tick .6s cubic-bezier(.2, .9, .3, 1.4) 1.05s both; }
+.pay-row.paid.go .qr-ic::after {
+  content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--green); pointer-events: none;
+  opacity: 0; animation: ring .7s ease-out 1.25s forwards;
+}
+.pay-row.paid .qr-ic { position: relative; }
+@keyframes tick { 0% { transform: scale(0) rotate(-25deg); } 55% { transform: scale(1.45) rotate(8deg); } 78% { transform: scale(.88) rotate(-3deg); } 100% { transform: scale(1) rotate(0); } }
+@keyframes ring { 0% { transform: scale(1); opacity: .9; } 100% { transform: scale(2.1); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .pay-row.paid.go .qr-ic .t { transform: none; }
+  .pay-row.paid.go .qr-ic::after { opacity: 0; }
+}
 .square { padding: 18px; text-align: center; font-weight: 800; color: var(--green); }
 @media (max-width: 400px) {
   .pay-btn { gap: 9px; padding-left: 12px; }
