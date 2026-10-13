@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bị ốm birthday</title>
+<meta name="description" content="Gà, bánh, đồng hồ — và ai chuyển cho ai. 12.10.2026.">
+<meta property="og:title" content="Bị ốm birthday">
+<meta property="og:description" content="Gà, bánh, đồng hồ — và ai chuyển cho ai.">
+<meta property="og:image" content="media/gallery/1.jpg">
+<meta name="theme-color" content="#c8102e">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M5 9h22l-3 21H8z' fill='%23fff' stroke='%23c8102e' stroke-width='1.6'/%3E%3Cpath d='M10.5 9l1 21M16 9v21M21.5 9l-1 21' stroke='%23c8102e' stroke-width='3'/%3E%3Ccircle cx='16' cy='5' r='3' fill='%23f2b233'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <header class="hero">
+    <div class="hero-photo"><img src="media/gallery/1.jpg" alt="Cả hội quanh bàn KFC"></div>
+    <div class="hero-text">
+      <p class="kicker"><span class="stripes" aria-hidden="true"></span>12.10.2026 · Liljeholmen</p>
+      <h1>Bị ốm <em>birthday</em></h1>
+    </div>
+  </header>
+
+  <ul class="faces" id="faces" aria-label="Mọi người"></ul>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="pay" aria-selected="true">Trả tiền</button>
+    <button role="tab" data-tab="bills" aria-selected="false">Hóa đơn</button>
+    <button role="tab" data-tab="pics" aria-selected="false">Ảnh</button>
+  </nav>
+
+  <main class="grid">
+    <section class="panel" id="panel-pay" aria-label="Trả tiền">
+      <h2 class="h">Ai chuyển cho ai</h2>
+      <div id="pay"></div>
+    </section>
+    <section class="panel" id="panel-bills" aria-label="Hóa đơn">
+      <h2 class="h">Hóa đơn</h2>
+      <div id="bills"></div>
+    </section>
+    <section class="panel" id="panel-pics" aria-label="Ảnh">
+      <h2 class="h">Ảnh</h2>
+      <div id="pics"></div>
+    </section>
+  </main>
+  <p class="fine" id="fine"></p>
+</div>
+
+<dialog id="qrBox" class="modal" aria-labelledby="qrTitle">
+  <header class="modal-head"><h2 id="qrTitle"></h2><button class="x" id="qrClose" aria-label="Đóng">✕</button></header>
+  <div class="seg" id="qrSeg" role="tablist"></div>
+  <label class="qr-amt" id="qrAmtWrap"><input id="qrAmtIn" inputmode="decimal" placeholder="0" aria-label="Số tiền"><span id="qrUnit">kr</span></label>
+  <p class="qr-amt" id="qrAmt"></p>
+  <p class="qr-sub" id="qrSub"></p>
+  <div class="qr-code" id="qrCode"></div>
+  <div class="qr-acct" id="qrAcct"></div>
+  <a class="qr-open" id="qrOpen" target="_blank" rel="noopener">Mở Swish</a>
+  <div class="qr-apps" id="qrApps"></div>
+</dialog>
+
+<dialog id="viewer" class="viewer" aria-label="Ảnh">
+  <button class="x v-x" id="vClose" aria-label="Đóng">✕</button>
+  <button class="v-nav v-prev" id="vPrev" aria-label="Trước">‹</button>
+  <div class="v-track" id="vTrack"></div>
+  <button class="v-nav v-next" id="vNext" aria-label="Sau">›</button>
+  <div class="v-dots" id="vDots"></div>
+</dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
