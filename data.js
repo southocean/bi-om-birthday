@@ -43,6 +43,7 @@ window.BILLS = [
 window.PAYMENTS = [
   { from: 'nam', to: 'truc', kr: 246, date: '2026-10-13', photo: 'media/receipts/nam-truc.jpg' },
   { from: 'mi', to: 'nam', kr: 349, date: '2026-10-13', photo: 'media/receipts/mi-nam.jpg' },
+  { from: 'zayn', to: 'nam', kr: 349, date: '2026-10-13', photo: 'media/receipts/zayn-nam.jpg' }, // 901 000 ₫ by VCB
 ];
 
 // rates on 13 Oct 2026 (frankfurter.dev for EUR, open.er-api.com for VND)
