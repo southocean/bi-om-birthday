@@ -5,7 +5,7 @@
 window.EVENT = {
   title: 'Bị ốm birthday',
   date: '2026-10-12',
-  where: 'Liljeholmen',
+  where: 'Studentbacken 25',
 };
 
 // faces are crops of media/gallery/1.jpg (Ánh's from another day out)
