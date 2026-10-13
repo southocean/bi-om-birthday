@@ -1,7 +1,9 @@
 (() => {
   const $ = s => document.querySelector(s);
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const unscramble = s => [...atob(s)].reverse().join('');
+  // Vietnamese without its accents (Bị ốm → Bi om): payment apps only show plain letters
+  const plain = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
+  const unscramble =s => [...atob(s)].reverse().join('');
   const person = id => PEOPLE.find(x => x.id === id);
   const fx = FX.sekPerEur;
   const billKr = b => b.kr != null ? b.kr : b.eur * fx;
@@ -138,7 +140,7 @@
     }
     return c.toString(16).toUpperCase().padStart(4, '0');
   }
-  const ascii = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').replace(/[^A-Za-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 25);
+  const ascii = s => plain(s).replace(/[^A-Za-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 25);
   function vietQr(bin, acct, amount, memo) {
     let s = tlv('00', '01') + tlv('01', amount ? '12' : '11')
       + tlv('38', tlv('00', 'A000000727') + tlv('01', tlv('00', bin) + tlv('01', acct)) + tlv('02', 'QRIBFTTA'))
@@ -171,7 +173,7 @@
   }
   function draw() {
     const to = person(cur.to), m = to.pay[cur.m], bank = m.kind === 'bank';
-    const memo = `${EVENT.title} - ${cur.from ? person(cur.from).name : ''}`.replace(/ - $/, '');
+    const memo = plain(`${EVENT.title} - ${cur.from ? person(cur.from).name : ''}`.replace(/ - $/, ''));
     $('#qrSeg').querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-selected', i === cur.m));
     // fixed amount from a payment; otherwise what's typed (kr for Swish, ₫ for a bank)
     const fixed = cur.kr != null;
